@@ -8,8 +8,7 @@ import chardet
 import io
 
 # OpenAI API setup
-key=OPENAI_API_KEY
-client = OpenAI(api_key=key)
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 def get_table_schema(table_name, db_name='data.db'):
     conn = sqlite3.connect(db_name)
