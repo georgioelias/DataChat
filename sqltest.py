@@ -4,6 +4,7 @@ import sqlite3
 import json
 from openai import OpenAI
 import os
+import numpy
 import chardet
 import io
 
