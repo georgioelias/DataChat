@@ -1,5 +1,5 @@
 numpy==1.21.0
-pandas==1.3.0
-streamlit==1.10.0
-openai==0.27.0
-chardet==4.0.0
+chardet==5.2.0
+openai==1.37.1
+pandas==2.0.2
+streamlit==1.36.0
