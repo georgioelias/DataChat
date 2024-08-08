@@ -38,6 +38,8 @@ if 'sql_generation_prompt' not in st.session_state:
     6. You shall not use functions like MONTH(),HOUR(),HOUR,YEAR(),DATEIFF(),.....
     7. Use only queries proper for sql LITE
     8.⁠ ⁠YOU CAN ONLY RETURN ONE SQL STATEMENT AT A TIME, COMBINE YOUR ANSWER IN ONLY ONE STATEMENT, NEVER 2 or MORE, Find workarounds.
+    9.Ignore Null values in interpretations and calculations only consider them where they are relevent.
+
 
     Example output:
     {{
