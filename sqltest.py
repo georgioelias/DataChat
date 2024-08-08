@@ -37,6 +37,7 @@ if 'sql_generation_prompt' not in st.session_state:
     5. The query can return multiple rows if appropriate for the user's question.
     6. You shall not use functions like MONTH(),HOUR(),HOUR,YEAR(),DATEIFF(),.....
     7. Use only queries proper for sql LITE
+    8.⁠ ⁠YOU CAN ONLY RETURN ONE SQL STATEMENT AT A TIME, COMBINE YOUR ANSWER IN ONLY ONE STATEMENT, NEVER 2 or MORE, Find workarounds.
 
     Example output:
     {{
