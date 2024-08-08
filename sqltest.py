@@ -19,7 +19,7 @@ API_KEYS = [
     st.secrets["OPENAI_API_KEY_2"],
     # Add more backup keys as needed
 ]
-MODELS = ["gpt-4", "gpt-4"]  # Add more models as needed
+MODELS = ["gpt-4o", "gpt-4o"]  # Add more models as needed
 
 # Global variables for prompts
 if 'sql_generation_prompt' not in st.session_state:
