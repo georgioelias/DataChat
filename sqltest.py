@@ -169,7 +169,6 @@ def generate_sql_query(user_input, prompt, chat_history):
         response = client.chat.completions.create(
             model=model,
             messages=messages,
-            max_tokens=300,
             n=1,
             stop=None,
             temperature=0,
@@ -222,7 +221,6 @@ def generate_response(json_data, prompt, chat_history):
         response = client.chat.completions.create(
             model=model,
             messages=messages,
-            max_tokens=200,
             n=1,
             stop=None,
             temperature=0,
