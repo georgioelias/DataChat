@@ -19,6 +19,7 @@ explanation_file_path="promptsql.txt"
 API_KEYS = [
     st.secrets["OPENAI_API_KEY"],
     st.secrets["OPENAI_API_KEY_2"],
+]
     # Add more backup keys as needed
     
 MODELS = ["gpt-4o", "gpt-4o"]
