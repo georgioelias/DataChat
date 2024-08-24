@@ -12,14 +12,16 @@ from collections import Counter
 # Constants
 DB_NAME = 'data.db'
 FIXED_TABLE_NAME = "uploaded_data"
-
+csv_file_path = "D:\Maids.cc\Python scripts2\ChatInterfaceSQL\Test-thebetterformat .csv"
+explanation_file_path="D:\Maids.cc\Python scripts2\ChatInterfaceSQL\promptsql.txt"
 # OpenAI API setup
+
 API_KEYS = [
     st.secrets["OPENAI_API_KEY"],
     st.secrets["OPENAI_API_KEY_2"],
     # Add more backup keys as needed
-]
-MODELS = ["gpt-4o", "gpt-4o"]  # Add more models as needed
+    
+MODELS = ["gpt-4o", "gpt-4o"]
 
 # Global variables for prompts
 if 'sql_generation_prompt' not in st.session_state:
@@ -37,9 +39,8 @@ if 'sql_generation_prompt' not in st.session_state:
     5. The query can return multiple rows if appropriate for the user's question.
     6. You shall not use functions like MONTH(),HOUR(),HOUR,YEAR(),DATEIFF(),.....
     7. Use only queries proper for sql LITE
-    8.⁠ ⁠YOU CAN ONLY RETURN ONE SQL STATEMENT AT A TIME, COMBINE YOUR ANSWER IN ONLY ONE STATEMENT, NEVER 2 or MORE, Find workarounds.
+    8.⁠ ⁠YOU CAN ONLY RETURN ONE SQL STATEMENT AT A TIME, COMBINE YOUR ANSWER IN ONLY ONE STATEMENT, NEVER 2 or MORE, Find workarounds.
     9.Ignore Null values in interpretations and calculations only consider them where they are relevent.
-
 
     Example output:
     {{
@@ -59,6 +60,7 @@ if 'response_generation_prompt' not in st.session_state:
     '''
 
 ############################################### HELPER FUNCTIONS ########################################################
+
 def detect_encoding(file_path):
     with open(file_path, 'rb') as file:
         raw_data = file.read()
@@ -169,6 +171,7 @@ def generate_sql_query(user_input, prompt, chat_history):
         response = client.chat.completions.create(
             model=model,
             messages=messages,
+            max_tokens=1000,
             n=1,
             stop=None,
             temperature=0,
@@ -221,6 +224,7 @@ def generate_response(json_data, prompt, chat_history):
         response = client.chat.completions.create(
             model=model,
             messages=messages,
+            max_tokens=1000,
             n=1,
             stop=None,
             temperature=0,
@@ -229,18 +233,16 @@ def generate_response(json_data, prompt, chat_history):
     
     return try_api_call(api_call, json_data, prompt, chat_history)
 
+
+# Load data function (modified to work in the backend)
 @st.cache_data
-def load_data(uploaded_file):
+def load_data(file_path):
     try:
-        with open("temp.csv", "wb") as f:
-            f.write(uploaded_file.getvalue())
-        
-        csv_analysis = analyze_csv("temp.csv")
-        
-        encoding = detect_encoding("temp.csv")
-        df = pd.read_csv("temp.csv", encoding=encoding)
+        encoding = detect_encoding(file_path)
+        df = pd.read_csv(file_path, encoding=encoding)
+        csv_analysis = analyze_csv(file_path)
     except Exception as e:
-        st.error(f"An error occurred while reading the file: {e}")
+        print(f"An error occurred while reading the file: {e}")
         return None, None, None
 
     if not df_to_sqlite(df, FIXED_TABLE_NAME):
@@ -248,8 +250,22 @@ def load_data(uploaded_file):
     
     return df, FIXED_TABLE_NAME, csv_analysis
 
+def load_explanation_from_file(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except Exception as e:
+        print(f"An error occurred while reading the explanation file: {e}")
+        return None
+
 def main():
     st.set_page_config(layout="wide", page_title="DataChat", page_icon="📈")
+    
+    # Reset chat button at the top of the page
+    if st.button("Reset Chat", key="reset_top"):
+        st.session_state.messages = []
+        st.experimental_rerun()
+    
     st.title("Data Chat Application")
 
     if 'messages' not in st.session_state:
@@ -258,116 +274,75 @@ def main():
     if 'csv_explanation' not in st.session_state:
         st.session_state.csv_explanation = ""
 
-    if 'show_prompt_editor' not in st.session_state:
-        st.session_state.show_prompt_editor = False
-
-    df = None
-
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-    if uploaded_file is not None:
-        df, table_name, csv_analysis = load_data(uploaded_file)
-        if df is not None:
-            # Use the stored explanation as the initial value
-            user_explanation = st.text_area("Please enter an explanation for your CSV data:", 
-                                           value=st.session_state.csv_explanation,
-                                           key="csv_explanation_input")
-            
-            if st.button("Submit Explanation"):
-                # Update the stored explanation when the submit button is pressed
-                st.session_state.csv_explanation = user_explanation
-                st.success("Explanation submitted successfully!")
-
-            # Use the stored explanation in subsequent operations
-            current_explanation = st.session_state.csv_explanation if st.session_state.csv_explanation else csv_analysis
-        else:
-            st.warning("Failed to load the CSV file. Please try again.")
-            return
-    else:
-        st.warning("Please upload a CSV file.")
+    # Load data in the backend
+    if not os.path.exists(csv_file_path):
+        st.error(f"CSV file not found: {csv_file_path}")
         return
 
-    if df is not None:
-        st.sidebar.success("Data loaded successfully!")
-        
-        st.sidebar.subheader("Data Preview")
-        st.sidebar.dataframe(df.head())
+    df, table_name, csv_analysis = load_data(csv_file_path)
+    if df is None:
+        st.error("Failed to load the CSV file. Please check the file and try again.")
+        return
 
-        st.header("Chat with your data")
+    # Choose explanation source in the code
+    use_csv_analysis = False  # Set this to False to use the text file instead
 
-        # Button to show/hide prompt editor
-        if st.sidebar.button("Edit Prompts"):
-            st.session_state.show_prompt_editor = not st.session_state.show_prompt_editor
-
-        # Show prompt editor if the button has been clicked
-        if st.session_state.show_prompt_editor:
-            st.sidebar.subheader("Edit Prompts")
-            
-            # Add dropdown to select which prompt to edit
-            prompt_type = st.sidebar.selectbox("Select prompt to edit", ["SQL Generation", "Response Generation"])
-
-            if prompt_type == "SQL Generation":
-                st.sidebar.text_area("Edit SQL Generation Prompt", value=st.session_state.sql_generation_prompt, height=300, key="sql_generation_prompt_input")
+    if use_csv_analysis:
+        st.session_state.csv_explanation = csv_analysis
+    else:
+        if not os.path.exists(explanation_file_path):
+            st.error(f"Explanation file not found: {explanation_file_path}")
+        else:
+            explanation_text = load_explanation_from_file(explanation_file_path)
+            if explanation_text is not None:
+                st.session_state.csv_explanation = explanation_text
             else:
-                st.sidebar.text_area("Edit Response Generation Prompt", value=st.session_state.response_generation_prompt, height=300, key="response_generation_prompt_input")
+                st.error("Failed to load the explanation text file. Please check the file and try again.")
 
-            if st.sidebar.button("Submit Prompt Changes"):
-                update_prompt(prompt_type)
-                st.sidebar.success(f"{prompt_type} prompt updated successfully!")
+    st.header("Chat with your data")
 
-        chat_container = st.container()
-        with chat_container:
-            for message in st.session_state.messages:
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
+    # Display chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-        # Create two columns for the chat input and reset button
-        col1, col2 = st.columns([4, 1])
+    # Chat input
+    user_input = st.chat_input("What would you like to know about the data?")
 
-        with col1:
-            prompt = st.chat_input("What would you like to know about the data?")
+    if user_input:
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        
+        with st.chat_message("user"):
+            st.markdown(user_input)
 
-        with col2:
-            if st.button("Reset Chat", key="reset_chat_button"):
-                reset_chat()
-                st.experimental_rerun()
-
-        if prompt:
-            st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.spinner("Generating response..."):
+            sql_generation_prompt = st.session_state.sql_generation_prompt.format(csv_explanation=st.session_state.csv_explanation, table_name=table_name)
+            sql_query_response = generate_sql_query(user_input, sql_generation_prompt, st.session_state.messages[:-1])
             
-            with st.chat_message("user"):
-                st.markdown(prompt)
+            if sql_query_response is None:
+                st.error("Failed to generate a response. Please try again later.")
+            else:
+                try:
+                    sql_data = json.loads(sql_query_response)
+                    sql_query = sql_data["SQL"]
+                    
+                    result_list = execute_query_and_save_json(sql_query_response, table_name)
 
-            with st.spinner("Generating response..."):
-                sql_generation_prompt = st.session_state.sql_generation_prompt.format(csv_explanation=current_explanation, table_name=table_name)
-                sql_query_response = generate_sql_query(prompt, sql_generation_prompt, st.session_state.messages[:-1])
-                
-                if sql_query_response is None:
-                    st.error("Failed to generate a response. Please try again later.")
-                else:
-                    try:
-                        sql_data = json.loads(sql_query_response)
-                        sql_query = sql_data["SQL"]
-                        display_sql_query(sql_query)
-                        
-                        result_list = execute_query_and_save_json(sql_query_response, table_name)
+                    if result_list:
+                        response_generation_prompt = st.session_state.response_generation_prompt.format(csv_explanation=st.session_state.csv_explanation)
+                        response = generate_response(json.dumps(result_list), response_generation_prompt, st.session_state.messages)
 
-                        if result_list:
-                            display_json_data(result_list)
-                            
-                            response_generation_prompt = st.session_state.response_generation_prompt.format(csv_explanation=current_explanation)
-                            response = generate_response(json.dumps(result_list), response_generation_prompt, st.session_state.messages)
-
-                            if response is None:
-                                st.error("Failed to generate a response. Please try again later.")
-                            else:
-                                st.session_state.messages.append({"role": "assistant", "content": response})
-                                
-                                with st.chat_message("assistant"):
-                                    st.markdown(response)
+                        if response is None:
+                            st.error("Failed to generate a response. Please try again later.")
                         else:
-                            st.error("Failed to execute the SQL query. Please try rephrasing your question.")
-                    except json.JSONDecodeError:
-                        st.error("Failed to generate a valid SQL query. Please try rephrasing your question.")
+                            st.session_state.messages.append({"role": "assistant", "content": response})
+                            
+                            with st.chat_message("assistant"):
+                                st.markdown(response)
+                    else:
+                        st.error("Failed to execute the SQL query. Please try rephrasing your question.")
+                except json.JSONDecodeError:
+                    st.error("Failed to generate a valid SQL query. Please try rephrasing your question.")
 
 if __name__ == "__main__":
     main()
