@@ -308,7 +308,7 @@ def main():
             st.markdown(message["content"])
 
     # Chat input
-    user_input = st.chat_input("What would you like to know about the data?")
+    user_input = st.chat_input("Ask a question about the data")
 
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
