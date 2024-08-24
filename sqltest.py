@@ -12,7 +12,7 @@ from collections import Counter
 # Constants
 DB_NAME = 'data.db'
 FIXED_TABLE_NAME = "uploaded_data"
-csv_file_path = "Test-thebetterformat.csv"
+csv_file_path = "Test-thebetterformat .csv"
 explanation_file_path="promptsql.txt"
 # OpenAI API setup
 
