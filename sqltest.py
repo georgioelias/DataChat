@@ -12,8 +12,8 @@ from collections import Counter
 # Constants
 DB_NAME = 'data.db'
 FIXED_TABLE_NAME = "uploaded_data"
-csv_file_path = "D:\Maids.cc\Python scripts2\ChatInterfaceSQL\Test-thebetterformat .csv"
-explanation_file_path="D:\Maids.cc\Python scripts2\ChatInterfaceSQL\promptsql.txt"
+csv_file_path = "Test-thebetterformat .csv"
+explanation_file_path="promptsql.txt"
 # OpenAI API setup
 
 API_KEYS = [
