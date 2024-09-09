@@ -19,10 +19,11 @@ explanation_file_path="promptsql.txt"
 API_KEYS = [
     st.secrets["OPENAI_API_KEY"],
     st.secrets["OPENAI_API_KEY_2"],
+     st.secrets["OPENAI_API_KEY_3"],
 ]
     # Add more backup keys as needed
     
-MODELS = ["gpt-4o", "gpt-4o"]
+MODELS = ["gpt-4o", "gpt-4o","gpt-4o"]
 
 # Global variables for prompts
 if 'sql_generation_prompt' not in st.session_state:
