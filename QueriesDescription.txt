@@ -1,13 +1,15 @@
+<DATA EXPLANATION>﻿
 Column A: titled: ActionType
 This Column gives the type of action that we are tracking could have one of the following values:
 Placements which represent the new sales that led to a contract signed
 Live-in Cancellations Retracted: represent the live-in Contracts planned to be canceled and retracted the cancellation 
 Live-out Cancellations Retracted: represent the live-out contracts that were planned to be canceled today and retracted the cancellation 
 Cancellations Live-in: represent the live-in contracts that were successfully canceled
-Cancellations Live-out: represents the live-out contracts that were successfully canceled
+Cancellations Live-in: represents the live-out contracts that were successfully canceled
 Maid Hiring: Represent the new maids getting hired
 Live-in Maids Terminations: represent the actions of live-in maid termination
 Live-out Maids Terminations: represent the actions of live-out maid termination
+
 
 Column B: titled: SubAction
 This column gives the breakdown of the ActionType column
@@ -21,13 +23,13 @@ LiveOut: represent other live-out placements
 For Cancellations Live-in and Cancellations Live-out: we have 2 breakdowns
 Returned Maids: Represent clients that canceled their cc contract and returned the maid to the company.
 Switched to MV:  represent clients that canceled their cc contract cause they decided to switch to MV service.
-For Maid Hiring: we have 8 breakdowns:
-on cancelled visa: means hired maid already has previous working visa and employer and switched to work for us 
+For Maid Hiring: we have 8 breakdowns
+On cancelled visa: means hired maid already has previous working visa and employer and switched to work for us 
 on tourist visa: means maid came to UAE with tourist visa
 Outside UAE: maids applied to work with us from outside UAE 
 From Operator: maid Is hired by an operator
 MV Live-in: all live in hired maid
-MVLiveOut: means maid switched from MV to CC live out
+MvLiveOut: means maid switched from MV to CC live out
 Ex-Live-in Live-out: means maid switched from live-in to live-out
 WildLiveOut: means hired maid is a live-out maid and didn’t switch from anything else.
 For Live-in MaidsTerminations and Live-out Maids Terminations: we have 4 Breakdowns:
@@ -36,131 +38,173 @@ Quit (Absconded ): represents maids  that ran away
 Quit (Non-absconded): represents maids that resigned.
 Did not renew: represent maids that didn’t renew after their visa expired.
 
+
 Column C : Titled : Nationality :
 Gives the maid related to the action nationality, could have one of the following values:
 Filipina  : the maid’s nationality is Filipina
 Ethiopian  : the maid’s nationality is Ethiopian  
 African : the maid’s nationality is one of the African nationalities
-Other: maid’s nationality is other than the above 
-
+Others: maid’s nationality is other than the above 
 Column D : Titled:  IDType : 
 Gives the entity that the action is related to and that the ID column represent
-As Placements and cancellations related to Contract 
-Maids Hiring and Maids Terminations are related to Housemaid 
+As Placements and cancellations related to contract 
+Maids Hiring and Maids Terminations are related to housemaid 
+
 
 Column E : Titled: ID : 
 gives a unique number to the entity mentioned in IDType column 
 
+
 Column F: Titled : ActionDate: Gives the date this action happened  
+</.DATA EXPLANATION>﻿
 
 
-NOTE:
-- WE ARE IN YEAR 2024
+
+<RULES>
+-THE CURRENT YEAR IS 2024, WHENEVER A QUESTION IS ASKED WITHOUT SPECIFYING THE YEAR TAKE 2024 AS DEAFULT.
 -Whenever there's a BETWEEN in your sqlquery you must add 1 full day for the second date. For Example : BETWEEN '2023-05-01' AND '2023-05-31' will become BETWEEN '2023-05-01' AND '2023-06-01'
-
-The DateTime format is YYYY-MM-DD H:MM:SS, like the following examples:
+-The DateTime format is YYYY-MM-DD H:MM:SS, like the following examples:
 2015-07-24 10:01:23
 2015-09-08 8:07:11
 
-When you’re asked to filter for Live-in placements, you must consider all types of Live-in placements. These are: LiveIn, Live-in ex MV Clients, and Live-in Retail.
+-When you’re asked to filter for Live-in placements, you must consider all types of Live-in placements. These are: LiveIn, Live-in ex MV Clients, and Live-in Retail.
 LiveIn is only the LiveIn that don’t fall into the other categories, it doesn’t represent all Live-in contracts.
 Same for Live-out too, you must consider all 3 types
 
+-Whenever asked about "Returned Maids" or " Switched to MV" always provide data for both Cancellations Live-in AND Cancellations Live-out, precising each one and also their total.
 
+</RULES>
+
+<QAs>
 I will give you a few examples of questions that can be asked by the user and what your correct answer should be:
 
 Question: How many Live-in Sales do we have in total?
 Answer: SELECT COUNT(*) AS LiveInSalesTotal FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction IN ('Live-in Retail', 'Live-in ex MV Clients', 'LiveIn')
 
+
 Question: How many maids have been hired on tourist visa?
 Answer: SELECT COUNT(*) AS total_maids_hired_on_tourist_visa FROM uploaded_data WHERE ActionType = 'Maid Hiring' AND SubAction = 'on tourist visa'
+
 
 Question: How many Live-out contracts were signed in October 2023?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction = 'LiveOut' AND ActionDate BETWEEN '10/01/2023' AND '11/01/2023'
 
+
 Question: What is the total number of Live-in Maids Terminations that were fired?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Live-in Maids Terminations' AND SubAction = 'Fired'
+
 
 Question: How many Placements of Retail Live-in were made for Ethiopian maids?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction = 'Live-in Retail' AND Nationality = 'Ethiopian';
 
+
 Question: What's the oldest contract signed?
 Answer: SELECT ActionDate FROM uploaded_data WHERE ActionType = 'Placements' ORDER BY ActionDate ASC LIMIT 1
+
 
 Question: How many maids switched to MV in 2024?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE (ActionType = 'Cancellations Live-in' OR ActionType = 'Cancellations Live-out') AND SubAction = 'Switched to MV' AND ActionDate BETWEEN '2024-01-01' AND '2025-01-01'
 
+
 Question: How many African maids were returned in 2023?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE (ActionType = 'Cancellations Live-in' OR ActionType = 'Cancellations Live-out') AND SubAction = 'Returned Maids' AND Nationality = 'African' AND ActionDate BETWEEN '2023-01-01' AND '2024-01-01'
+
 
 Question: How many Ethiopian maids came from cancellation visa in 2022?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Maid Hiring' AND SubAction = 'on cancelled visa' AND Nationality = 'Ethiopian' AND ActionDate BETWEEN '01/01/2022' AND '01/01/2023'
 
+
 Question: How many abscond cases did we get in 2023?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE (ActionType IN ('Live-in Maids Terminations', 'Live-out Maids Terminations')) AND SubAction = 'Quit (Absconded)' AND ActionDate BETWEEN '2023-01-01' AND '2024-01-01'
+
 
 Question: How many Filipina maids have we hired in 2024?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Maid Hiring' AND Nationality = 'Filipina' AND ActionDate BETWEEN '2024-01-01' AND '2025-01-01'
 
+
 Question: How many Filipina maids have we fired in 2024?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE (ActionType = 'Live-in Maids Terminations' OR ActionType = 'Live-out Maids Terminations') AND SubAction = 'Fired' AND Nationality = 'Filipina' AND ActionDate BETWEEN '2024-01-01' AND '2025-01-01'
+
 
 Question: What's the total number of Filipina maids that no longer work with us?
 Answer: SELECT COUNT(*) AS total_filipina_maids_no_longer_working FROM uploaded_data WHERE (ActionType = 'Live-in Maids Terminations' OR ActionType = 'Live-out Maids Terminations') AND (SubAction = 'Fired' OR SubAction = 'Quit (Absconded)' OR SubAction = 'Quit (Non-absconded)' OR SubAction = 'Did not renew') AND Nationality = 'Filipina'
 
+
 Question: How any African maids did we hire in the last 7 days?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Maid Hiring' AND Nationality = 'African' AND ActionDate BETWEEN DATE('now', '-7 days') AND DATE('now', '+1 day')
+
 
 Question: How many Cancellations Live-in occurred in 2023 (Excluding CC to MV)?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Cancellations Live-in' AND SubAction != 'Switched to MV' AND ActionDate BETWEEN '2023-01-01' AND '2024-01-01'
 
+
 Question: For maids absconded, how many of them were live-in versus live-out?
 Answer: SELECT ActionType, COUNT(*) as AbscondedCount FROM uploaded_data WHERE (ActionType = 'Live-in Maids Terminations' OR ActionType = 'Live-out Maids Terminations') AND SubAction = 'Quit (Absconded)' GROUP BY ActionType
+
 
 Question: How many Live-in placements were made for Filipino maids in the last 60 days?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction IN ('LiveIn', 'Live-in ex MV Clients', 'Live-in Retail') AND Nationality = 'Filipina' AND ActionDate BETWEEN DATE('now', '-60 days') AND DATE('now', '+1 day')
 
+
 Question: How many Live-out terminations were made for African maids in the last 60 days?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Live-out Maids Terminations' AND Nationality = 'African' AND ActionDate BETWEEN DATE('now', '-60 days') AND DATE('now', '+1 day')
+
 
 Question: How many Live-in retractions did we get in the last 60 days?
 Answer: SELECT COUNT(*) FROM uploaded_data WHERE ActionType = 'Live-in Cancellations Retracted' AND ActionDate BETWEEN DATE('now', '-60 days') AND DATE('now', '+1 day')
 
+
 Question: what percentage of Live-in terminations are Quit (Non absconded)?
 Answer: SELECT (CAST(SUM(CASE WHEN SubAction = 'Quit (Non-absconded)' THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*)) * 100 AS percentage_quit_non_absconded FROM uploaded_data WHERE ActionType = 'Live-in Maids Terminations'
+
 
 Question: Give me the number of maids that did not renew for both Live-in and Live-out
 Answer: SELECT ActionType, COUNT(*) as NumberOfMaids FROM uploaded_data WHERE (ActionType = 'Live-in Maids Terminations' OR ActionType = 'Live-out Maids Terminations') AND SubAction = 'Did not renew' GROUP BY ActionType
 
+
 Question: Which maid nationality gets hired the most from operators?
 Answer: SELECT Nationality, COUNT(*) as HireCount FROM uploaded_data WHERE ActionType = 'Maid Hiring' AND SubAction = 'From Operator' GROUP BY Nationality ORDER BY HireCount DESC LIMIT 1
+
 
 Question: Which subtype has the highest number of Live-in maid Terminations?
 Answer: SELECT SubAction, COUNT(*) as TerminationCount FROM uploaded_data WHERE ActionType = 'Live-in Maids Terminations' GROUP BY SubAction ORDER BY TerminationCount DESC LIMIT 1
 
+
 Question: Which subtype has the highest number of Live-out maid Terminations?
 Answer: SELECT SubAction, COUNT(ID) AS TerminationCount FROM uploaded_data WHERE ActionType = 'Live-out Maids Terminations' GROUP BY SubAction ORDER BY TerminationCount DESC LIMIT 1
+
 
 Question: Do we get more Live-in or Live-out contracts?
 Answer: SELECT SubAction, COUNT(*) as count FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction IN ('LiveIn', 'Live-in ex MV Clients', 'Live-in Retail', 'LiveOut', 'Live-out ex MV Clients', 'Live-out Retail') GROUP BY SubAction
 
+
 Question: Compare the number of Live-in Sales of May 2023 to May 2024, tell me which one is greater and give me the values for each
 Answer: SELECT 'May 2023' AS Period, COUNT(*) AS LiveInSales FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction IN ('Live-in Retail', 'Live-in ex MV Clients', 'LiveIn') AND ActionDate BETWEEN '2023-05-01' AND '2023-06-01' UNION ALL SELECT 'May 2024' AS Period, COUNT(*) AS LiveInSales FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction IN ('Live-in Retail', 'Live-in ex MV Clients', 'LiveIn') AND ActionDate BETWEEN '2024-05-01' AND '2024-06-01'
+
 
 Question: What are the total counts of each SubAction for Cancellations Live-out?
 Answer: SELECT SubAction, COUNT(*) as TotalCount FROM uploaded_data WHERE ActionType = 'Cancellations Live-out' GROUP BY SubAction
 
+
 Question: How many unique contracts were involved in both Live-in Placements and Live-in Cancellations Retracted?
 Answer: SELECT COUNT(DISTINCT ID) AS unique_contracts FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction IN ('Live-in Retail', 'Live-in ex MV Clients', 'LiveIn') AND ID IN (SELECT ID FROM uploaded_data WHERE ActionType = 'Live-in Cancellations Retracted')
+
 
 Question: What are the total counts of Placements for each nationality (Excluding Others)?
 Answer: SELECT Nationality, COUNT(*) AS TotalPlacements FROM uploaded_data WHERE ActionType = 'Placements' AND Nationality != 'Others' GROUP BY Nationality
 
+
 Question: How many maids came on tourist visa and got absconded?
 Answer: SELECT COUNT(DISTINCT h.ID) AS absconded_maids FROM uploaded_data h JOIN uploaded_data t ON h.ID = t.ID WHERE h.ActionType = 'Maid Hiring' AND h.SubAction = 'on tourist visa' AND (t.ActionType = 'Live-in Maids Terminations' OR t.ActionType = 'Live-out Maids Terminations') AND t.SubAction = 'Quit (Absconded)'
+
 
 Question: Give me the breakdown Live-in maid terminatons
 Answer: SELECT SubAction, COUNT(*) AS TerminationCount FROM uploaded_data WHERE ActionType = 'Live-in Maids Terminations' GROUP BY SubAction
 
+
 Question: How many maids came from tourist visa for each nationality and for each year?
 Answer: SELECT Nationality, strftime('%Y', ActionDate) AS Year, COUNT(*) AS Count FROM uploaded_data WHERE SubAction = 'on tourist visa' AND Nationality != 'Others' GROUP BY Nationality, strftime('%Y', ActionDate)
+
+Question: How many total live in from Aug 18 at 6:00pm till Sep 17 at 6:00pm ?
+Answer: SELECT COUNT(*) AS TotalLiveInPlacements FROM uploaded_data WHERE ActionType = 'Placements' AND SubAction IN ('Live-in Retail', 'Live-in ex MV Clients', 'LiveIn') AND ActionDate BETWEEN '2024-08-18 18:00:00' AND '2024-09-17 18:00:00'
+</QAs>
