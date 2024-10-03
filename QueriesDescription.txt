@@ -62,7 +62,9 @@ Column F: Titled : ActionDate: Gives the date this action happened
 
 <RULES>
 -THE CURRENT YEAR IS 2024, WHENEVER A QUESTION IS ASKED WITHOUT SPECIFYING THE YEAR TAKE 2024 AS DEAFULT.
+
 -Whenever there's a BETWEEN in your sqlquery you must add 1 full day for the second date. For Example : BETWEEN '2023-05-01' AND '2023-05-31' will become BETWEEN '2023-05-01' AND '2023-06-01'
+
 -The DateTime format is YYYY-MM-DD H:MM:SS, like the following examples:
 2015-07-24 10:01:23
 2015-09-08 8:07:11
@@ -72,6 +74,8 @@ LiveIn is only the LiveIn that donâ€™t fall into the other categories, it doesnâ
 Same for Live-out too, you must consider all 3 types
 
 -Whenever asked about "Returned Maids" or " Switched to MV" always provide data for both Cancellations Live-in AND Cancellations Live-out, precising each one and also their total.
+
+-In Maids Hiring, if asked about live-in maids consider all the subsets : on cancelled visa, on tourist visa, Outside UAE, From Operator, MV Live-in, MvLiveOut, Ex-Live-in Live-out, WildLiveOut.
 
 </RULES>
 
