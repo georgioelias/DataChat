@@ -23,7 +23,7 @@ API_KEYS = [
 ]
     # Add more backup keys as needed
     
-MODELS = ["gpt-4o", "gpt-4o","gpt-4o"]
+MODELS = ["gpt-4", "gpt-4","gpt-4"]
 
 # Global variables for prompts
 if 'sql_generation_prompt' not in st.session_state:
